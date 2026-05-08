@@ -1,0 +1,7 @@
+node_modules
+# Keep build artifacts and environment variables out of version control
+dist
+*.tsbuildinfo
+.env
+
+/src/generated/prisma
