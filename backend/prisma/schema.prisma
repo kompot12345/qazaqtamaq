@@ -1,0 +1,236 @@
+// backend/prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  FARMER
+  B2B_BUYER
+  B2C_BUYER
+  ADMIN
+}
+
+enum OrderType {
+  RETAIL
+  EXPORT
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// User accounts with role-based access control
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  passwordHash     String
+  name             String
+  phone            String?
+  role             Role      @default(B2C_BUYER)
+  binIin           String?   // Tax ID for businesses/farmers
+  address          String?   // Legal/residential address
+  city             String?   // City (for local delivery)
+  avatarUrl        String?
+  isVerified       Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  farm             Farm?                 // 1:1 if FARMER role
+  products         Product[]             // Products listed by farmer
+  orders           Order[]               // Orders placed/managed
+  reviews          Review[]              // Reviews written
+  messages         Message[]             // Direct messages
+  chatRooms        ChatRoom[]            // Chat rooms as participant
+  sellerChatRooms  ChatRoom[] @relation("Seller")  // Chat rooms as seller
+
+  @@index([email])
+  @@index([role])
+}
+
+// Farm profile for FARMER users
+model Farm {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  licenseUrl       String?   // PDF URL or local file
+  description      String?
+  location         String?
+  rating           Float     @default(0)
+  totalReviews     Int       @default(0)
+  verifiedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Product categories with hierarchical support
+model Category {
+  id               String    @id @default(uuid())
+  name             String
+  slug             String    @unique
+  parentId         String?   // For hierarchical categories (Meat -> Beef -> Ribeye)
+  description      String?
+  createdAt        DateTime  @default(now())
+
+  // Relations
+  parent           Category? @relation("CategoryParent", fields: [parentId], references: [id])
+  children         Category[] @relation("CategoryParent")
+  products         Product[]
+
+  @@index([slug])
+}
+
+// Agricultural products with dual inventory (retail vs export)
+model Product {
+  id               String    @id @default(uuid())
+  name             String
+  description      String?
+  categoryId       String
+  farmerId         String
+  
+  // Pricing (Tenge, ₸)
+  retailPrice      Float     // B2C retail price
+  wholesalePrice   Float     // Small wholesale
+  exportPrice      Float?    // Bulk export price
+  
+  // Stock management (dual inventory)
+  retailStock      Int       @default(0)  // Available for B2C
+  exportStock      Int       @default(0)  // Reserved for B2B/export
+  moq              Int?      // Minimum order quantity for export
+  
+  // Product attributes
+  fatContent       String?   // e.g., "5%" for dairy
+  feedingType      String?   // e.g., "Grass-fed", "Organic"
+  expirationDate   DateTime? // Shelf life
+  imageUrl         String?
+  
+  // Status flags
+  isVerified       Boolean   @default(false)
+  isAvailableRetail Boolean  @default(true)
+  isAvailableExport Boolean  @default(false)
+  discountActive   Boolean   @default(false)
+  discountPercent  Int       @default(0)  // For Expiration Guard
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  category         Category  @relation(fields: [categoryId], references: [id])
+  farmer           User      @relation(fields: [farmerId], references: [id])
+  orderItems       OrderItem[]
+  reviews          Review[]
+
+  @@index([farmerId])
+  @@index([categoryId])
+  @@index([expirationDate])
+}
+
+// Orders (can be retail or export)
+model Order {
+  id               String    @id @default(uuid())
+  userId           String
+  type             OrderType @default(RETAIL)
+  status           OrderStatus @default(PENDING)
+  totalAmount      Float
+  
+  // Delivery info
+  deliveryAddress  String?
+  deliveryCity     String?
+  phone            String?
+  
+  // Timestamps
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  user             User      @relation(fields: [userId], references: [id])
+  items            OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+}
+
+// Order line items with dynamic pricing
+model OrderItem {
+  id               String  @id @default(uuid())
+  orderId          String
+  productId        String
+  quantity         Int
+  price            Float   // Price at time of order (role-based)
+  createdAt        DateTime @default(now())
+
+  // Relations
+  order            Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product          Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// Product reviews and ratings
+model Review {
+  id               String  @id @default(uuid())
+  productId        String
+  userId           String
+  rating           Int     // 1-5 stars
+  comment          String?
+  isVerifiedPurchase Boolean @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  product          Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user             User    @relation(fields: [userId], references: [id])
+
+  @@index([productId])
+  @@index([userId])
+}
+
+// Direct messaging between buyers and farmers
+model ChatRoom {
+  id               String  @id @default(uuid())
+  buyerId          String
+  sellerId         String
+  lastMessageAt    DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  // Relations
+  buyer            User    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  seller           User    @relation("Seller", fields: [sellerId], references: [id], onDelete: Cascade)
+  messages         Message[]
+
+  @@unique([buyerId, sellerId])
+  @@index([buyerId])
+  @@index([sellerId])
+}
+
+// Messages within chat rooms
+model Message {
+  id               String  @id @default(uuid())
+  chatRoomId       String
+  userId           String
+  content          String
+  isRead           Boolean @default(false)
+  createdAt        DateTime @default(now())
+
+  // Relations
+  chatRoom         ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  user             User    @relation(fields: [userId], references: [id])
+
+  @@index([chatRoomId])
+  @@index([userId])
+}
