@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Eye, EyeOff, Lock, Mail, User, Phone, MapPin, Briefcase, Sparkles, ArrowRight, Check } from 'lucide-react';
 import { authAPI } from '@/lib/api';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import type { Role } from '@/types';
 
 const DiskCanvas = dynamic(() => import('@/components/three/DiskCanvas'), {
   ssr: false,
@@ -24,7 +25,16 @@ export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    email: string;
+    password: string;
+    name: string;
+    role: Role;
+    binIin: string;
+    address: string;
+    city: string;
+    phone: string;
+  }>({
     email: '',
     password: '',
     name: '',
@@ -35,7 +45,7 @@ export default function RegisterPage() {
     phone: '',
   });
 
-  const ROLES = [
+  const ROLES: { value: Role; labelKey: string; descKey: string; icon: string; color: string }[] = [
     { value: 'B2C_BUYER', labelKey: 'auth.b2cLabel', descKey: 'auth.b2cDesc', icon: '🛒', color: '#D4AF37' },
     { value: 'B2B_BUYER', labelKey: 'auth.b2bLabel', descKey: 'auth.b2bDesc', icon: '🏢', color: '#00AFCA' },
     { value: 'FARMER', labelKey: 'auth.farmerLabel', descKey: 'auth.farmerDesc', icon: '🌾', color: '#0089A7' },
@@ -44,7 +54,7 @@ export default function RegisterPage() {
   const needsExtra = form.role === 'FARMER' || form.role === 'B2B_BUYER';
   const activeRole = ROLES.find((r) => r.value === form.role) ?? ROLES[0];
 
-  const handleRoleSelect = (role: string) => {
+  const handleRoleSelect = (role: Role) => {
     setForm({ ...form, role });
     setTimeout(() => setStep(2), 300);
   };

@@ -260,4 +260,8 @@ export const translations = {
     saved: { en: 'Profile updated', ru: 'Профиль обновлен', kk: 'Профиль жаңартылды' } as T,
     saveError: { en: 'Error saving', ru: 'Ошибка сохранения', kk: 'Сақтау қатесі' } as T,
   },
+  products: {
+    loadError: { en: 'Could not load products', ru: 'Не удалось загрузить продукты', kk: 'Өнімдерді жүктеу мүмкін болмады' } as T,
+    loginRequired: { en: 'Sign in to add to cart', ru: 'Войдите для добавления в корзину', kk: 'Себетке қосу үшін кіріңіз' } as T,
+  },
 } as const;

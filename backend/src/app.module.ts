@@ -16,10 +16,14 @@ import { ChatModule } from './chat/chat.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    JwtModule.register({
+    JwtModule.registerAsync({
       global: true,
-      secret: process.env.JWT_SECRET ?? 'default_jwt_secret',
-      signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as any },
+      useFactory: () => {
+        const secret = process.env.JWT_SECRET;
+        if (!secret) throw new Error('JWT_SECRET environment variable is required');
+        const expiresIn = (process.env.JWT_EXPIRES_IN ?? '7d') as `${number}${'s'|'m'|'h'|'d'|'w'|'y'}` | number;
+        return { secret, signOptions: { expiresIn } };
+      },
     }),
     PassportModule,
     ScheduleModule.forRoot(),

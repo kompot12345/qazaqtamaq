@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { productsAPI, categoriesAPI } from '@/lib/api';
 import { Leaf, Globe, Users, TrendingUp, Check, Zap, Award, Shield } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import type { Product, Category } from '@/types';
 
 const GlobeCanvas = dynamic(() => import('@/components/three/GlobeCanvas'), {
   ssr: false,
@@ -23,8 +24,8 @@ const FarmerCanvas = dynamic(() => import('@/components/three/FarmerCanvas'), {
 
 export default function HomePage() {
   const { t } = useLanguage();
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,8 +37,8 @@ export default function HomePage() {
         ]);
         setProducts(productsRes.data?.data || []);
         setCategories(categoriesRes.data || []);
-      } catch (error) {
-        console.error('Failed to load data:', error);
+      } catch {
+        // Non-critical — page still renders without featured products
       } finally {
         setLoading(false);
       }

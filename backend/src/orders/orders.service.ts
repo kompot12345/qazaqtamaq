@@ -55,7 +55,37 @@ export class OrdersService {
     });
   }
 
-  async updateStatus(id: string, status: OrderStatus) {
+  async getFarmerOrders(farmerId: string) {
+    return this.prisma.order.findMany({
+      where: {
+        items: {
+          some: {
+            product: { farmerId },
+          },
+        },
+      },
+      include: {
+        items: {
+          include: { product: { select: { id: true, name: true, farmerId: true } } },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async updateStatus(id: string, status: OrderStatus, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: { items: { include: { product: { select: { farmerId: true } } } } },
+    });
+    if (!order) throw new Error('Order not found');
+
+    const isFarmerOrder = order.items.some((item) => item.product.farmerId === userId);
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    if (!isFarmerOrder && user?.role !== 'ADMIN') {
+      throw new Error('Forbidden: you do not own this order');
+    }
+
     return this.prisma.order.update({
       where: { id },
       data: { status },

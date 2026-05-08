@@ -32,6 +32,14 @@ export interface Farm {
   isVerified?: boolean;
 }
 
+export interface ProductFarmer {
+  id: string;
+  name: string;
+  email?: string;
+  city?: string;
+  address?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -48,13 +56,17 @@ export interface Product {
   expirationDate?: string;
   isAvailableRetail: boolean;
   isAvailableExport: boolean;
+  isVerified?: boolean;
   discountActive?: boolean;
+  discountPercent?: number;
   currentPrice?: number;
   daysUntilExpiry?: number;
   price?: number;
   category?: Category;
   farm?: Farm;
+  farmer?: ProductFarmer;
   reviews?: Review[];
+  averageRating?: string | null;
   createdAt?: string;
 }
 
@@ -89,8 +101,12 @@ export interface Order {
   type: OrderType;
   status: OrderStatus;
   totalAmount: number;
+  deliveryAddress?: string;
+  deliveryCity?: string;
+  phone?: string;
   items: OrderItem[];
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface PaginatedResponse<T> {

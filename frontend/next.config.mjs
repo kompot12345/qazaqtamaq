@@ -1,6 +1,12 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  outputFileTracingRoot: path.resolve(__dirname, '..'),
   async rewrites() {
     const backend = process.env.BACKEND_URL || 'http://localhost:3001';
     return [

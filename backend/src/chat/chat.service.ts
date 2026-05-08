@@ -49,8 +49,8 @@ export class ChatService {
           return { reply: parsed.reply ?? raw, suggestions: parsed.suggestions ?? [], data: context ?? undefined };
         }
         return { reply: raw, suggestions: ['Өнімдер?', 'Тапсырыс беру', 'Жеңілдіктер?'] };
-      } catch {
-        // fall through to rule-based
+      } catch (err) {
+        console.warn('[Tattibek] Anthropic API error, falling back to rule-based:', (err as Error).message);
       }
     }
 

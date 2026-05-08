@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Search, SlidersHorizontal, ShoppingCart, Shield, Leaf, X, ChevronLeft, ChevronRight, AlertTriangle, Package } from 'lucide-react';
 import { productsAPI, categoriesAPI } from '@/lib/api';
 import { formatPrice, getStoredUser, getStoredCart, saveCart } from '@/lib/utils';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Product, Category, CartItem } from '@/types';
 
 // Real Kazakh food photos (Unsplash)
@@ -51,7 +52,7 @@ function getImageFallback(product: Product): string {
 }
 
 function getLocationChip(product: Product): string {
-  const city = (product as any).farmer?.city ?? (product as any).farm?.location ?? '';
+  const city = product.farmer?.city ?? product.farm?.location ?? '';
   return (CITY_CHIPS[city] ?? city.toUpperCase()) || 'KAZAKHSTAN';
 }
 
@@ -79,7 +80,7 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
   const hasDiscount = product.discountActive || (product.discountActive && product.retailPrice !== price);
   const location = getLocationChip(product);
   const imageUrl = getImageFallback(product);
-  const feedingLower = ((product as any).feedingType ?? '').toLowerCase();
+  const feedingLower = (product.feedingType ?? '').toLowerCase();
   const isOrganic = feedingLower.includes('трава') || feedingLower.includes('натур') ||
     feedingLower.includes('organic') || feedingLower.includes('органик') ||
     feedingLower.includes('жайылым') || feedingLower.includes('табиғ');
@@ -102,7 +103,7 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
 
         {/* Shield verified top-right */}
         <div className="absolute top-3 right-3 z-10 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow">
-          <Shield size={14} className={(product as any).isVerified ? 'text-[#00AFCA]' : 'text-gray-300'} />
+          <Shield size={14} className={product.isVerified ? 'text-[#00AFCA]' : 'text-gray-300'} />
         </div>
 
         <Link href={`/products/${product.id}`}>
@@ -130,8 +131,8 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
           <span className="text-[10px] font-bold text-[#0089A7] bg-[#E8F6FA] px-2 py-0.5 rounded-full uppercase">
             {product.category?.name ?? 'Продукт'}
           </span>
-          {(product as any).farmer?.name && (
-            <span className="text-[11px] text-gray-400">by {(product as any).farmer.name}</span>
+          {product.farmer?.name && (
+            <span className="text-[11px] text-gray-400">by {product.farmer.name}</span>
           )}
         </div>
 
@@ -145,9 +146,9 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
               {product.name}
             </h3>
           </Link>
-          {(product as any).feedingType && (
+          {product.feedingType && (
             <p className="text-[11px] text-[#C9A227] font-semibold mt-0.5">
-              {(product as any).feedingType}
+              {product.feedingType}
             </p>
           )}
         </div>
@@ -218,6 +219,7 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
 
 export default function ProductsPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -240,7 +242,7 @@ export default function ProductsPage() {
       setTotal(data.pagination?.total ?? data.total ?? 0);
       setTotalPages(data.pagination?.pages ?? data.totalPages ?? 1);
     } catch {
-      toast.error('Не удалось загрузить продукты');
+      toast.error(t('products.loadError'));
     } finally {
       setLoading(false);
     }
@@ -254,7 +256,7 @@ export default function ProductsPage() {
 
   const handleAddToCart = (product: Product, qty = 1) => {
     if (!user) {
-      toast.error('Войдите для добавления в корзину');
+      toast.error(t('products.loginRequired'));
       router.push('/auth/login');
       return;
     }
@@ -267,7 +269,7 @@ export default function ProductsPage() {
       cart.push({ productId: product.id, name: product.name, price, quantity: qty, imageUrl: product.imageUrl, retailStock: product.retailStock });
     }
     saveCart(cart);
-    toast.success(`${product.name} × ${qty} кг — добавлен в корзину`);
+    toast.success(`${product.name} × ${qty} кг`);
   };
 
   const handleTabClick = (tab: string, catId = '') => {
