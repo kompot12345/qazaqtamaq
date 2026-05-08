@@ -1,0 +1,375 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight, Package, X, MapPin, Phone, User } from 'lucide-react';
+import { ordersAPI, productsAPI } from '@/lib/api';
+import { formatPrice, getStoredUser, getStoredCart, saveCart } from '@/lib/utils';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import type { CartItem } from '@/types';
+
+interface DeliveryForm {
+  name: string;
+  phone: string;
+  city: string;
+  address: string;
+}
+
+export default function CartPage() {
+  const router = useRouter();
+  const { t } = useLanguage();
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const user = getStoredUser();
+
+  const [delivery, setDelivery] = useState<DeliveryForm>({
+    name: user?.name ?? '',
+    phone: user?.phone ?? '',
+    city: user?.city ?? '',
+    address: '',
+  });
+
+  useEffect(() => {
+    const stored = getStoredCart();
+    if (stored.length === 0) { setCart([]); return; }
+
+    Promise.all(
+      stored.map((item: CartItem) =>
+        productsAPI.getById(item.productId)
+          .then((res) => ({ ...item, retailStock: (res.data as { retailStock: number }).retailStock }))
+          .catch(() => null),
+      ),
+    ).then((results) => {
+      const valid = results.filter(Boolean) as CartItem[];
+      const dropped = stored.length - valid.length;
+      if (dropped > 0) {
+        toast.error(`${dropped} ${t('cart.itemRemoved')}`);
+        saveCart(valid);
+      }
+      setCart(valid);
+    });
+
+    const onCartUpdate = () => setCart(getStoredCart());
+    window.addEventListener('cartUpdated', onCartUpdate);
+    return () => window.removeEventListener('cartUpdated', onCartUpdate);
+  }, []);
+
+  const updateQty = (productId: string, delta: number) => {
+    const updated = cart
+      .map((item) =>
+        item.productId === productId
+          ? { ...item, quantity: Math.max(0, Math.min(item.retailStock, item.quantity + delta)) }
+          : item,
+      )
+      .filter((item) => item.quantity > 0);
+    setCart(updated);
+    saveCart(updated);
+  };
+
+  const removeItem = (productId: string) => {
+    const updated = cart.filter((i) => i.productId !== productId);
+    setCart(updated);
+    saveCart(updated);
+    toast.success(t('cart.itemRemoved'));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    saveCart([]);
+    toast.success(t('cart.cartCleared'));
+  };
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const openCheckout = () => {
+    if (!user) {
+      toast.error(t('cart.loginRequired'));
+      router.push('/auth/login');
+      return;
+    }
+    if (cart.length === 0) return;
+    setShowModal(true);
+  };
+
+  const handleSubmitOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!delivery.phone.trim() || !delivery.city.trim() || !delivery.address.trim()) {
+      toast.error(t('cart.fillDelivery'));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await ordersAPI.create({
+        type: user!.role === 'B2B_BUYER' ? 'EXPORT' : 'RETAIL',
+        totalAmount: total,
+        deliveryAddress: delivery.address.trim(),
+        deliveryCity: delivery.city.trim(),
+        phone: delivery.phone.trim(),
+        items: cart.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      });
+      const orderId: string = (res.data as { id: string }).id;
+      saveCart([]);
+      setCart([]);
+      setShowModal(false);
+      toast.success(`${t('orders.order')} #${orderId.slice(-6).toUpperCase()} ✓`);
+      router.push('/orders');
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
+      toast.error(Array.isArray(msg) ? msg[0] : (msg || t('cart.orderError')));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-white to-sky-50/30">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-[#0A2540] to-[#0D3256] py-14">
+        <div className="container-custom">
+          <Link href="/products" className="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors mb-4">
+            <ArrowLeft size={18} /> {t('cart.continueShopping')}
+          </Link>
+          <h1 className="text-4xl font-bold text-white flex items-center gap-3">
+            <ShoppingCart size={40} /> {t('cart.title')}
+            {cart.length > 0 && (
+              <span className="text-2xl text-[#D4AF37]">({cart.length})</span>
+            )}
+          </h1>
+        </div>
+      </div>
+
+      <div className="container-custom py-10">
+        {cart.length === 0 ? (
+          <div className="text-center py-24">
+            <div className="w-24 h-24 bg-sky-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShoppingCart size={40} className="text-gray-300" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-700 mb-3">{t('cart.empty')}</h2>
+            <p className="text-gray-500 mb-8">{t('cart.emptySubtitle')}</p>
+            <Link href="/products" className="btn-primary inline-flex items-center gap-2">
+              <Package size={18} /> {t('cart.goToCatalogue')}
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cart items */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-gray-600 font-medium">{cart.length} {t('nav.products').toLowerCase()}</p>
+                <button
+                  onClick={clearCart}
+                  className="text-sm text-red-500 hover:text-red-700 flex items-center gap-1 transition-colors font-medium"
+                >
+                  <Trash2 size={14} /> {t('cart.clearCart')}
+                </button>
+              </div>
+
+              {cart.map((item) => (
+                <div key={item.productId} className="card p-5 flex gap-4 items-center">
+                  <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-sky-50">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl">🥩</div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-[#0A2540] truncate">{item.name}</h3>
+                    <p className="text-sm text-gray-500">{formatPrice(item.price)} ₸/кг</p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => updateQty(item.productId, -1)}
+                        className="px-3 py-2 hover:bg-gray-50 transition-colors text-gray-700"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="px-4 py-2 font-bold text-[#0A2540] border-x border-gray-200 text-sm">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQty(item.productId, 1)}
+                        disabled={item.quantity >= item.retailStock}
+                        className="px-3 py-2 hover:bg-gray-50 transition-colors text-gray-700 disabled:opacity-40"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+
+                    <p className="font-bold text-[#0A2540] w-28 text-right">
+                      {formatPrice(item.price * item.quantity)} ₸
+                    </p>
+
+                    <button
+                      onClick={() => removeItem(item.productId)}
+                      className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Order summary */}
+            <div className="lg:col-span-1">
+              <div className="card p-6 sticky top-24">
+                <h2 className="text-xl font-bold text-[#0A2540] mb-6">{t('cart.orderSummary')}</h2>
+
+                <div className="space-y-3 mb-6">
+                  {cart.map((item) => (
+                    <div key={item.productId} className="flex justify-between text-sm">
+                      <span className="text-gray-600 truncate flex-1 mr-2">{item.name} × {item.quantity}</span>
+                      <span className="font-medium text-[#0A2540] flex-shrink-0">{formatPrice(item.price * item.quantity)} ₸</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-gray-200 pt-4 mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-[#0A2540]">{t('cart.total')}</span>
+                    <span className="text-2xl font-bold text-[#0A2540]">{formatPrice(total)} ₸</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">{t('cart.excludingDelivery')}</p>
+                </div>
+
+                <button
+                  onClick={openCheckout}
+                  disabled={cart.length === 0}
+                  className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-[#C9A227] to-[#FFD700] text-[#0A2540] font-bold rounded-xl hover:shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {t('cart.placeOrder')} <ArrowRight size={18} />
+                </button>
+
+                {!user && (
+                  <p className="text-center text-xs text-gray-500 mt-3">
+                    <Link href="/auth/login" className="text-[#0A2540] font-semibold hover:underline">
+                      {t('cart.loginToOrder')}
+                    </Link>{' '}
+                    {t('cart.loginToOrderSuffix')}
+                  </p>
+                )}
+
+                <div className="mt-6 space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-gray-500">{t('cart.securePayment')}</div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">{t('cart.deliveryKz')}</div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">{t('cart.qualityGuarantee')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Delivery modal */}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
+        >
+          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-xl font-bold text-[#0A2540]">{t('cart.deliveryTitle')}</h2>
+                <p className="text-sm text-gray-400 mt-0.5">{t('cart.deliverySubtitle')}</p>
+              </div>
+              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <X size={20} className="text-gray-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitOrder} className="px-6 py-5 space-y-4">
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{t('auth.fullName')}</label>
+                <div className="relative">
+                  <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    value={delivery.name}
+                    onChange={(e) => setDelivery((d) => ({ ...d, name: e.target.value }))}
+                    placeholder={t('cart.namePlaceholder')}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00AFCA] focus:ring-2 focus:ring-[#00AFCA]/20 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{t('cart.phoneRequired')}</label>
+                <div className="relative">
+                  <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    required
+                    value={delivery.phone}
+                    onChange={(e) => setDelivery((d) => ({ ...d, phone: e.target.value }))}
+                    placeholder="+7 700 000 0000"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00AFCA] focus:ring-2 focus:ring-[#00AFCA]/20 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* City */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{t('cart.cityRequired')}</label>
+                <div className="relative">
+                  <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    required
+                    value={delivery.city}
+                    onChange={(e) => setDelivery((d) => ({ ...d, city: e.target.value }))}
+                    placeholder="Алматы"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00AFCA] focus:ring-2 focus:ring-[#00AFCA]/20 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Address */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{t('cart.deliveryAddress')}</label>
+                <textarea
+                  required
+                  rows={2}
+                  value={delivery.address}
+                  onChange={(e) => setDelivery((d) => ({ ...d, address: e.target.value }))}
+                  placeholder={t('cart.addressPlaceholder')}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00AFCA] focus:ring-2 focus:ring-[#00AFCA]/20 transition-all resize-none"
+                />
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">{cart.length} {t('nav.products').toLowerCase()}</span>
+                  <span className="font-bold text-[#0A2540] text-lg">{formatPrice(total)} ₸</span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-[#C9A227] to-[#FFD700] text-[#0A2540] font-bold rounded-xl hover:shadow-lg hover:shadow-yellow-500/30 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-[#0A2540]/30 border-t-[#0A2540] rounded-full animate-spin" />
+                ) : (
+                  <>{t('cart.confirmOrder')}</>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
