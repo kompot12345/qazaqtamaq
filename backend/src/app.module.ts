@@ -12,6 +12,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { GamificationModule } from './gamification/gamification.module';
 import { ChatModule } from './chat/chat.module';
+import { CamerasModule } from './cameras/cameras.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ChatModule } from './chat/chat.module';
     PrismaModule,
     GamificationModule,
     ChatModule,
+    CamerasModule,
   ],
   controllers: [AppController],
 })

@@ -52,6 +52,7 @@ model User {
   messages         Message[]             // Direct messages
   chatRooms        ChatRoom[]            // Chat rooms as participant
   sellerChatRooms  ChatRoom[] @relation("Seller")  // Chat rooms as seller
+  cameraFeeds      CameraFeed[]          // CCTV camera streams
 
   @@index([email])
   @@index([role])
@@ -216,6 +217,22 @@ model ChatRoom {
   @@unique([buyerId, sellerId])
   @@index([buyerId])
   @@index([sellerId])
+}
+
+// CCTV camera feed streams for farm monitoring
+model CameraFeed {
+  id          String   @id @default(uuid())
+  farmerId    String
+  name        String
+  streamUrl   String   // HLS URL, YouTube Live embed, or RTSP relay
+  location    String?  // e.g., "Cow pen A", "Entrance"
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  farmer      User     @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  @@index([farmerId])
 }
 
 // Messages within chat rooms

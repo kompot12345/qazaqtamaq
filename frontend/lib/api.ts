@@ -76,3 +76,16 @@ export const gamificationAPI = {
 export const tattibekeAPI = {
   chat: (message: string) => api.post('/chat/tattibek', { message }),
 };
+
+export const analyticsAPI = {
+  farmerSales: () => api.get('/analytics/farmer/sales'),
+  farmerDeliveries: () => api.get('/analytics/farmer/deliveries'),
+};
+
+export const camerasAPI = {
+  getAll: () => api.get('/cameras'),
+  create: (data: { name: string; streamUrl: string; location?: string }) => api.post('/cameras', data),
+  update: (id: string, data: { name?: string; streamUrl?: string; location?: string; isActive?: boolean }) =>
+    api.patch(`/cameras/${id}`, data),
+  delete: (id: string) => api.delete(`/cameras/${id}`),
+};
