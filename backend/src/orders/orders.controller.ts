@@ -39,6 +39,14 @@ export class OrdersController {
     return this.ordersService.getFarmerOrders((req.user as { id: string }).id);
   }
 
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Get single order by id (owner only)' })
+  findById(@Param('id') id: string, @Req() req: Request) {
+    return this.ordersService.findById(id, (req.user as { id: string }).id);
+  }
+
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')

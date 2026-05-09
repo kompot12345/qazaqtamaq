@@ -8,6 +8,13 @@ import { Leaf, Globe, Users, TrendingUp, Check, Zap, Award, Shield } from 'lucid
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Product, Category } from '@/types';
 
+const CATEGORY_EMOJI: Record<string, string> = {
+  meat: '🥩', beef: '🥩', lamb: '🐑', 'horse-meat': '🐴', poultry: '🐔',
+  dairy: '🥛', milk: '🥛', 'fermented-dairy': '🍶', cheese: '🧀',
+  grain: '🌾', vegetables: '🥦', fruits: '🍎', eggs: '🥚', honey: '🍯',
+  traditional: '🏺',
+};
+
 const GlobeCanvas = dynamic(() => import('@/components/three/GlobeCanvas'), {
   ssr: false,
   loading: () => (
@@ -89,9 +96,9 @@ export default function HomePage() {
                   ['10K+', t('home.statProducts')],
                   ['50K+', t('home.statBuyers')],
                 ].map(([val, label]) => (
-                  <div key={label} className="text-center">
-                    <p className="text-3xl md:text-4xl font-bold text-[#FFD700] mb-1">{val}</p>
-                    <p className="text-gray-400 text-sm font-medium">{label}</p>
+                  <div key={label} className="text-center group">
+                    <p className="stat-number mb-1 group-hover:scale-110 transition-transform duration-200">{val}</p>
+                    <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">{label}</p>
                   </div>
                 ))}
               </div>
@@ -182,26 +189,43 @@ export default function HomePage() {
       </section>
 
       {/* ── Key Features ── */}
-      <section className="py-20 bg-gradient-to-br from-white to-sky-50/50">
-        <div className="container-custom">
-          <div className="text-center mb-16">
-            <h2 className="section-title mb-4">{t('home.whyUs')}</h2>
-            <p className="section-subtitle max-w-2xl mx-auto">{t('home.whyUsSubtitle')}</p>
+      <section className="py-20 bg-[#060D1A] relative overflow-hidden">
+        {/* Ambient */}
+        <div className="absolute top-0 left-1/3 w-96 h-96 bg-[#00AFCA]/6 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/3 w-72 h-72 bg-[#C9A227]/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="container-custom relative z-10">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-[#00AFCA]/10 border border-[#00AFCA]/20 text-[#7DD8E8] text-[10px] font-black px-3.5 py-1.5 rounded-full mb-5 tracking-widest">
+              WHY QAZAQTAMAQ
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">{t('home.whyUs')}</h2>
+            <p className="text-gray-500 max-w-xl mx-auto text-sm leading-relaxed">{t('home.whyUsSubtitle')}</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { Icon: Leaf, titleKey: 'home.featureFreshTitle', descKey: 'home.featureFreshDesc' },
-              { Icon: Globe, titleKey: 'home.featureGlobalTitle', descKey: 'home.featureGlobalDesc' },
-              { Icon: Users, titleKey: 'home.featureDirectTitle', descKey: 'home.featureDirectDesc' },
-              { Icon: TrendingUp, titleKey: 'home.featurePricingTitle', descKey: 'home.featurePricingDesc' },
-            ].map(({ Icon, titleKey, descKey }) => (
-              <div key={titleKey} className="card-premium p-8 text-center group hover:border-[#00AFCA]">
-                <div className="icon-wrapper mx-auto mb-4">
-                  <Icon className="w-8 h-8 text-[#0089A7] group-hover:text-[#C9A227] transition-colors mx-auto" />
+              { Icon: Leaf, titleKey: 'home.featureFreshTitle', descKey: 'home.featureFreshDesc', color: '#4ADE80', glow: 'rgba(74,222,128,0.15)' },
+              { Icon: Globe, titleKey: 'home.featureGlobalTitle', descKey: 'home.featureGlobalDesc', color: '#00AFCA', glow: 'rgba(0,175,202,0.15)' },
+              { Icon: Users, titleKey: 'home.featureDirectTitle', descKey: 'home.featureDirectDesc', color: '#C9A227', glow: 'rgba(201,162,39,0.15)' },
+              { Icon: TrendingUp, titleKey: 'home.featurePricingTitle', descKey: 'home.featurePricingDesc', color: '#818CF8', glow: 'rgba(129,140,248,0.15)' },
+            ].map(({ Icon, titleKey, descKey, color, glow }) => (
+              <div
+                key={titleKey}
+                className="relative p-7 rounded-2xl border border-white/6 bg-gradient-to-b from-white/[0.05] to-transparent group hover:border-white/12 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+              >
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
+                  style={{ background: `radial-gradient(ellipse at top left, ${glow} 0%, transparent 60%)` }}
+                />
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 border border-white/8 transition-all duration-300 group-hover:scale-110"
+                  style={{ background: `${color}18` }}
+                >
+                  <Icon size={22} style={{ color }} />
                 </div>
-                <h3 className="font-bold text-xl mb-3 text-[#0A2540]">{t(titleKey)}</h3>
-                <p className="text-gray-600 leading-relaxed">{t(descKey)}</p>
+                <h3 className="font-bold text-white text-base mb-2">{t(titleKey)}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{t(descKey)}</p>
               </div>
             ))}
           </div>
@@ -209,19 +233,21 @@ export default function HomePage() {
       </section>
 
       {/* ── Trust Strip ── */}
-      <section className="py-16 bg-[#0A2540]/4 border-y border-[#00AFCA]/20">
+      <section className="py-12 bg-[#060D1A] border-y border-white/5">
         <div className="container-custom">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { Icon: Award, labelKey: 'home.trustFarmers', subKey: 'home.trustFarmersSub' },
               { Icon: Shield, labelKey: 'home.trustPayment', subKey: 'home.trustPaymentSub' },
               { Icon: Check, labelKey: 'home.trustQuality', subKey: 'home.trustQualitySub' },
               { Icon: Zap, labelKey: 'home.trustDelivery', subKey: 'home.trustDeliverySub' },
             ].map(({ Icon, labelKey, subKey }) => (
-              <div key={labelKey} className="flex flex-col items-center text-center">
-                <Icon className="w-8 h-8 text-[#FFD700] mb-3" />
-                <p className="font-bold text-[#0A2540]">{t(labelKey)}</p>
-                <p className="text-sm text-gray-600">{t(subKey)}</p>
+              <div key={labelKey} className="flex flex-col items-center text-center group">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-[#C9A227]/12 border border-[#C9A227]/20 group-hover:bg-[#C9A227]/20 transition-colors duration-200">
+                  <Icon className="w-5 h-5 text-[#C9A227]" />
+                </div>
+                <p className="font-bold text-white text-sm">{t(labelKey)}</p>
+                <p className="text-xs text-gray-600 mt-0.5">{t(subKey)}</p>
               </div>
             ))}
           </div>
@@ -229,57 +255,72 @@ export default function HomePage() {
       </section>
 
       {/* ── Featured Products ── */}
-      <section className="py-20">
+      <section className="py-20 bg-[#060D1A]">
         <div className="container-custom">
-          <div className="flex flex-col md:flex-row justify-between md:items-end gap-4 mb-12">
+          <div className="flex flex-col md:flex-row justify-between md:items-end gap-4 mb-10">
             <div>
-              <h2 className="section-title mb-2">{t('home.featuredTitle')}</h2>
-              <p className="section-subtitle">{t('home.featuredSubtitle')}</p>
+              <p className="text-[#00AFCA] text-[10px] font-black tracking-[0.2em] mb-2">FRESH FROM KAZAKH FARMS</p>
+              <h2 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">{t('home.featuredTitle')}</h2>
+              <p className="text-gray-500 text-sm">{t('home.featuredSubtitle')}</p>
             </div>
-            <Link href="/products" className="btn-accent text-center md:text-left">
-              {t('home.viewAll')}
+            <Link
+              href="/products"
+              className="flex-shrink-0 px-5 py-2.5 text-[#0A2540] font-black text-sm rounded-xl transition-all duration-200 hover:shadow-[0_0_20px_rgba(201,162,39,0.4)] hover:scale-[1.02]"
+              style={{ background: 'linear-gradient(135deg, #C9A227, #FFD700)' }}
+            >
+              {t('home.viewAll')} →
             </Link>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="card animate-pulse h-96" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-80 rounded-2xl bg-white/[0.04] animate-pulse" />
               ))}
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {products.map((product: any, idx: number) => (
-                <div key={product.id} className="scale-in" style={{ animationDelay: `${idx * 0.1}s` }}>
+                <div key={product.id} className="scale-in" style={{ animationDelay: `${idx * 0.07}s` }}>
                   <Link href={`/products/${product.id}`}>
-                    <div className="card-premium overflow-hidden h-full flex flex-col group">
-                      {product.imageUrl && (
-                        <div className="w-full h-48 bg-gradient-to-br from-gray-200 to-gray-300 overflow-hidden relative">
+                    <div className="group relative rounded-2xl overflow-hidden border border-white/8 bg-gradient-to-b from-white/[0.05] to-white/[0.02] hover:border-[#00AFCA]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+                      {product.imageUrl ? (
+                        <div className="relative h-48 overflow-hidden">
                           <img
                             src={product.imageUrl}
                             alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                           />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#060D1A]/70 via-transparent to-transparent" />
                           {product.discountActive && (
-                            <div className="absolute top-4 right-4 badge-accent shadow-lg">{t('home.discount')}</div>
+                            <div className="absolute top-3 right-3 badge-accent shadow-lg text-[9px]">
+                              {t('home.discount')}
+                            </div>
                           )}
                         </div>
-                      )}
-                      <div className="p-6 flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="font-bold text-lg text-[#0A2540] mb-2 group-hover:text-[#C9A227] transition-colors">
-                            {product.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 mb-3">{product.category?.name}</p>
+                      ) : (
+                        <div className="h-48 bg-gradient-to-br from-[#0A2540] to-[#0D3256] flex items-center justify-center">
+                          <span className="text-4xl opacity-30">🌾</span>
                         </div>
-                        <div className="flex justify-between items-end">
+                      )}
+                      <div className="p-5">
+                        <p className="text-[9px] font-black text-[#0089A7] tracking-widest mb-1.5 uppercase">
+                          {product.category?.name}
+                        </p>
+                        <h3 className="font-bold text-white text-sm mb-3 group-hover:text-[#00AFCA] transition-colors duration-200 line-clamp-2">
+                          {product.name}
+                        </h3>
+                        <div className="flex items-end justify-between">
                           <div>
-                            <p className="text-xs text-gray-500 font-medium mb-1">{t('home.price')}</p>
-                            <p className="text-2xl font-bold text-[#0A2540]">
-                              {product.price}<span className="text-sm">₸</span>
+                            <p className="text-[8px] text-gray-600 font-black tracking-widest mb-0.5">
+                              {t('home.price')}
+                            </p>
+                            <p className="text-xl font-black text-white">
+                              {product.price}
+                              <span className="text-sm font-bold text-[#00AFCA] ml-0.5">₸</span>
                             </p>
                           </div>
-                          <span className="px-3 py-1.5 bg-gradient-to-r from-sky-100 to-sky-50 text-sky-700 text-xs font-bold rounded-full border border-sky-200">
+                          <span className="text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
                             {t('home.inStock')}
                           </span>
                         </div>
@@ -290,8 +331,8 @@ export default function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 border-2 border-dashed border-gray-300 rounded-2xl">
-              <p className="text-gray-500 text-lg font-medium">{t('home.noProducts')}</p>
+            <div className="text-center py-20 border border-white/6 rounded-3xl">
+              <p className="text-gray-500 text-base font-medium">{t('home.noProducts')}</p>
             </div>
           )}
         </div>
@@ -299,11 +340,12 @@ export default function HomePage() {
 
       {/* ── Categories ── */}
       {categories.length > 0 && (
-        <section className="py-20 bg-gradient-to-br from-sky-50/40 to-white border-t border-[#00AFCA]/15">
+        <section className="py-20 bg-[#060D1A] border-t border-white/5">
           <div className="container-custom">
-            <div className="text-center mb-16">
-              <h2 className="section-title mb-4">{t('home.categoriesTitle')}</h2>
-              <p className="section-subtitle">{t('home.categoriesSubtitle')}</p>
+            <div className="text-center mb-12">
+              <p className="text-[#C9A227] text-[10px] font-black tracking-[0.2em] mb-3">BROWSE BY CATEGORY</p>
+              <h2 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">{t('home.categoriesTitle')}</h2>
+              <p className="text-gray-500 text-sm max-w-lg mx-auto">{t('home.categoriesSubtitle')}</p>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -311,17 +353,19 @@ export default function HomePage() {
                 <Link
                   key={category.id}
                   href={`/products?category=${category.id}`}
-                  className="scale-in"
+                  className="scale-in group"
                   style={{ animationDelay: `${idx * 0.05}s` }}
                 >
-                  <div className="card-premium p-6 text-center h-full group hover:bg-gradient-to-br hover:from-[#0A2540] hover:to-[#0D3256] transition-all duration-300">
-                    <h3 className="font-bold text-lg text-[#0A2540] group-hover:text-white transition-colors">
+                  <div className="relative p-6 rounded-2xl border border-white/8 bg-gradient-to-b from-white/[0.05] to-transparent text-center h-full hover:border-[#C9A227]/35 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] overflow-hidden">
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
+                      style={{ background: 'radial-gradient(ellipse at top, rgba(201,162,39,0.1) 0%, transparent 60%)' }}
+                    />
+                    <p className="text-2xl mb-3">{CATEGORY_EMOJI[category.slug] ?? '📦'}</p>
+                    <h3 className="font-bold text-sm text-white group-hover:text-[#FFD700] transition-colors duration-200">
                       {category.name}
                     </h3>
                     {category.description && (
-                      <p className="text-sm text-gray-600 mt-2 group-hover:text-gray-200 transition-colors">
-                        {category.description}
-                      </p>
+                      <p className="text-[11px] text-gray-600 mt-1.5 line-clamp-2">{category.description}</p>
                     )}
                   </div>
                 </Link>

@@ -7,8 +7,8 @@
     "lib": "lib"
   },
   "scripts": {
-    "dev": "NODE_ENV=development next dev",
-    "build": "NODE_ENV=production next build",
+    "dev": "unset __NEXT_PRIVATE_STANDALONE_CONFIG __NEXT_PRIVATE_ORIGIN 2>/dev/null; NODE_ENV=development next dev",
+    "build": "unset __NEXT_PRIVATE_STANDALONE_CONFIG __NEXT_PRIVATE_ORIGIN 2>/dev/null; NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -32,11 +32,16 @@
     "three": "^0.184.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
     "@types/node": "20.17.6",
     "@types/react": "19.2.14",
+    "@typescript-eslint/eslint-plugin": "^8.59.2",
+    "@typescript-eslint/parser": "^8.59.2",
     "autoprefixer": "^10.5.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
     "postcss": "^8.5.14",
     "tailwindcss": "^3.4.19",
-    "typescript": "5.8.2"
+    "typescript": "^5.8.2"
   }
 }

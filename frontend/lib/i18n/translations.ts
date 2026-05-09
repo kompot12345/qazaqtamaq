@@ -186,6 +186,9 @@ export const translations = {
   cart: {
     title: { en: 'Cart', ru: 'Корзина', kk: 'Себет' } as T,
     continueShopping: { en: 'Continue Shopping', ru: 'Продолжить покупки', kk: 'Сатып алуды жалғастыру' } as T,
+    phoneRequired: { en: 'Phone *', ru: 'Телефон *', kk: 'Телефон *' } as T,
+    cityRequired: { en: 'City *', ru: 'Город *', kk: 'Қала *' } as T,
+    deliveryAddress: { en: 'Delivery Address *', ru: 'Адрес доставки *', kk: 'Жеткізу мекенжайы *' } as T,
     empty: { en: 'Cart is empty', ru: 'Корзина пуста', kk: 'Себет бос' } as T,
     emptySubtitle: {
       en: 'Add products from the catalogue to place an order',
@@ -222,6 +225,7 @@ export const translations = {
   orders: {
     title: { en: 'My Orders', ru: 'Мои заказы', kk: 'Менің тапсырыстарым' } as T,
     backToHome: { en: 'Back to Home', ru: 'На главную', kk: 'Басты бетке' } as T,
+    track: { en: 'Track', ru: 'Отследить', kk: 'Бақылау' } as T,
     empty: { en: 'No orders yet', ru: 'Заказов пока нет', kk: 'Тапсырыстар жоқ' } as T,
     emptySubtitle: {
       en: 'Go to the catalogue and make your first order',
@@ -263,5 +267,15 @@ export const translations = {
   products: {
     loadError: { en: 'Could not load products', ru: 'Не удалось загрузить продукты', kk: 'Өнімдерді жүктеу мүмкін болмады' } as T,
     loginRequired: { en: 'Sign in to add to cart', ru: 'Войдите для добавления в корзину', kk: 'Себетке қосу үшін кіріңіз' } as T,
+    catalogTitle: { en: 'Product Catalog', ru: 'Каталог продуктов', kk: 'Өнімдер каталогы' } as T,
+    catalogSubtitle: { en: 'Dynamic pricing by account type · Dual inventory', ru: 'Динамические цены по типу аккаунта · Двойной склад', kk: 'Аккаунт түріне байланысты бағалар · Қос қойма' } as T,
+    searchPlaceholder: { en: 'Search: beef, lamb, milk…', ru: 'Поиск: говядина, баранина, молоко…', kk: 'Іздеу: сиыр, қой, сүт…' } as T,
+    searchBtn: { en: 'Search', ru: 'Найти', kk: 'Іздеу' } as T,
+    loading: { en: 'Loading…', ru: 'Загрузка…', kk: 'Жүктелуде…' } as T,
+    found: { en: 'products found', ru: 'продуктов найдено', kk: 'өнім табылды' } as T,
+    notFound: { en: 'No products found', ru: 'Продукты не найдены', kk: 'Өнімдер табылмады' } as T,
+    notFoundSub: { en: 'Try different search terms or category', ru: 'Попробуйте другой запрос или категорию', kk: 'Басқа сөз немесе санат қолданып көріңіз' } as T,
+    addToCart: { en: 'Add', ru: 'Добавить', kk: 'Қосу' } as T,
+    marketplace: { en: 'HYBRID B2B/B2C MARKETPLACE', ru: 'ГИБРИДНЫЙ B2B/B2C МАРКЕТПЛЕЙС', kk: 'ГИБРИДТІК B2B/B2C МАРКЕТПЛЕЙС' } as T,
   },
 } as const;

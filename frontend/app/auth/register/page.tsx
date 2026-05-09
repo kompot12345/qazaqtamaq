@@ -190,7 +190,7 @@ export default function RegisterPage() {
                         onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                         placeholder={t(phKey)}
                         required
-                        className="w-full pl-9 pr-4 py-2.5 bg-white/8 border border-white/15 rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#FFD700]/70 transition-all"
+                        className="input-dark w-full pl-9 pr-4 py-2.5 border border-white/15 rounded-xl text-sm focus:outline-none focus:border-[#FFD700]/70 transition-all"
                       />
                     </div>
                   </div>
@@ -206,7 +206,7 @@ export default function RegisterPage() {
                       onChange={(e) => setForm({ ...form, password: e.target.value })}
                       placeholder={t('auth.passwordMin')}
                       required minLength={8}
-                      className="w-full pl-9 pr-10 py-2.5 bg-white/8 border border-white/15 rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#FFD700]/70 transition-all"
+                      className="input-dark w-full pl-9 pr-10 py-2.5 border border-white/15 rounded-xl text-sm focus:outline-none focus:border-[#FFD700]/70 transition-all"
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
@@ -252,7 +252,7 @@ export default function RegisterPage() {
                         onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                         placeholder={phKey ? t(phKey) : ph}
                         required={req}
-                        className="w-full pl-9 pr-4 py-2.5 bg-white/8 border border-white/15 rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#FFD700]/70 transition-all"
+                        className="input-dark w-full pl-9 pr-4 py-2.5 border border-white/15 rounded-xl text-sm focus:outline-none focus:border-[#FFD700]/70 transition-all"
                       />
                     </div>
                   </div>

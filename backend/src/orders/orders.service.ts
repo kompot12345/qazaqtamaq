@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -48,6 +48,15 @@ export class OrdersService {
     });
   }
 
+  async findById(id: string, userId: string) {
+    const order = await this.prisma.order.findFirst({
+      where: { id, userId },
+      include: { items: { include: { product: true } } },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    return order;
+  }
+
   async findMy(userId: string) {
     return this.prisma.order.findMany({
       where: { userId },
@@ -78,12 +87,12 @@ export class OrdersService {
       where: { id },
       include: { items: { include: { product: { select: { farmerId: true } } } } },
     });
-    if (!order) throw new Error('Order not found');
+    if (!order) throw new NotFoundException('Order not found');
 
     const isFarmerOrder = order.items.some((item) => item.product.farmerId === userId);
     const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
     if (!isFarmerOrder && user?.role !== 'ADMIN') {
-      throw new Error('Forbidden: you do not own this order');
+      throw new ForbiddenException('You do not own this order');
     }
 
     return this.prisma.order.update({

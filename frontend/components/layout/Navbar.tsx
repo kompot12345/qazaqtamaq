@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Menu, X, LogOut, ShoppingCart, Sparkles, User, Package, ShoppingBag } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -21,9 +21,10 @@ export function Navbar() {
   const [user, setUser] = useState<Record<string, string> | null>(null);
   const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+  const activeLangIdx = LANGS.findIndex((l) => l.code === lang);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -66,59 +67,77 @@ export function Navbar() {
     return map[role] || role;
   };
 
+  const navLinks = [
+    { href: '/products', labelKey: 'nav.products', show: true },
+    { href: '/gamification', labelKey: 'nav.gamification', show: true },
+    { href: '/dashboard', labelKey: 'nav.dashboard', show: user?.role === 'FARMER' },
+    { href: '/orders', labelKey: 'nav.orders', show: !!user },
+  ].filter((l) => l.show);
+
   return (
-    <nav className={`sticky top-0 z-50 transition-all duration-300 ${
-      scrolled
-        ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50'
-        : 'bg-white/80 backdrop-blur-sm border-b border-gray-100/30'
-    }`}>
-      <div className="container-custom flex justify-between items-center h-16 md:h-20">
+    <nav
+      className={`sticky top-0 z-50 transition-all duration-500 ${
+        scrolled
+          ? 'bg-[#050D1A]/92 backdrop-blur-2xl border-b border-[#00AFCA]/25 shadow-[0_4px_40px_rgba(0,0,0,0.5)]'
+          : 'bg-[#050D1A]/70 backdrop-blur-xl border-b border-white/5'
+      }`}
+    >
+      <div className="container-custom flex justify-between items-center h-16 md:h-[72px]">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#0A2540] to-[#0089A7] rounded-xl flex items-center justify-center text-white shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
-            <Sparkles size={20} />
+        <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
+          <div className="relative w-9 h-9 flex-shrink-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#C9A227] to-[#00AFCA] rounded-xl opacity-0 group-hover:opacity-60 blur-md transition-all duration-500" />
+            <div className="relative w-9 h-9 bg-gradient-to-br from-[#0A2540] to-[#0D3256] rounded-xl flex items-center justify-center border border-white/10 group-hover:border-[#FFD700]/40 transition-colors duration-300">
+              <Sparkles
+                size={17}
+                className="text-[#FFD700] transition-transform duration-300 group-hover:rotate-[20deg]"
+              />
+            </div>
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-[#0A2540] to-[#00AFCA] bg-clip-text text-transparent">
+          <span
+            className="text-xl font-black hidden sm:block tracking-tight"
+            style={{
+              background: 'linear-gradient(135deg, #FFD700 0%, #C9A227 40%, #00AFCA 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
             QazaqTamaq
           </span>
         </Link>
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8">
-          <Link href="/products" className="text-gray-700 hover:text-[#0A2540] font-medium transition-colors relative group">
-            {t('nav.products')}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#0A2540] to-[#FFD700] group-hover:w-full transition-all duration-300" />
-          </Link>
-          <Link href="/gamification" className="text-gray-700 hover:text-[#0A2540] font-medium transition-colors relative group">
-            {t('nav.gamification')}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#FFD700] to-[#C9A227] group-hover:w-full transition-all duration-300" />
-          </Link>
-          {user?.role === 'FARMER' && (
-            <Link href="/dashboard" className="text-gray-700 hover:text-[#0A2540] font-medium transition-colors relative group">
-              {t('nav.dashboard')}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#0A2540] to-[#FFD700] group-hover:w-full transition-all duration-300" />
+        {/* Desktop Nav Links */}
+        <div className="hidden md:flex items-center gap-0.5">
+          {navLinks.map(({ href, labelKey }) => (
+            <Link
+              key={href}
+              href={href}
+              className="relative px-4 py-2 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group rounded-lg hover:bg-white/5"
+            >
+              {t(labelKey)}
+              <span className="absolute bottom-1 left-4 right-4 h-px bg-gradient-to-r from-[#FFD700] to-[#00AFCA] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full" />
             </Link>
-          )}
-          {user && (
-            <Link href="/orders" className="text-gray-700 hover:text-[#0A2540] font-medium transition-colors relative group">
-              {t('nav.orders')}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#0A2540] to-[#FFD700] group-hover:w-full transition-all duration-300" />
-            </Link>
-          )}
+          ))}
         </div>
 
         {/* Right side */}
-        <div className="hidden md:flex items-center gap-3">
-          {/* Language switcher */}
-          <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
+        <div className="hidden md:flex items-center gap-2.5">
+          {/* Language switcher with sliding indicator */}
+          <div className="relative flex items-center gap-0.5 bg-white/5 border border-white/8 rounded-lg p-0.5 overflow-hidden">
+            <div
+              className="absolute top-0.5 bottom-0.5 rounded-md border border-[#C9A227]/35 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] pointer-events-none"
+              style={{
+                background: 'linear-gradient(135deg, rgba(201,162,39,0.2), rgba(0,175,202,0.1))',
+                width: `calc(${100 / LANGS.length}% - 2px)`,
+                left: `calc(2px + ${activeLangIdx * (100 / LANGS.length)}%)`,
+              }}
+            />
             {LANGS.map(({ code, label }) => (
               <button
                 key={code}
                 onClick={() => setLang(code)}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
-                  lang === code
-                    ? 'bg-[#0A2540] text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-800'
+                className={`relative z-10 px-2.5 py-1.5 text-[11px] font-bold rounded-md transition-all duration-200 min-w-[30px] ${
+                  lang === code ? 'text-[#FFD700]' : 'text-gray-500 hover:text-gray-300'
                 }`}
               >
                 {label}
@@ -127,41 +146,68 @@ export function Navbar() {
           </div>
 
           {!user ? (
-            <>
-              <Link href="/auth/login" className="btn-ghost">{t('nav.login')}</Link>
-              <Link href="/auth/register" className="btn-primary">{t('nav.register')}</Link>
-            </>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/auth/login"
+                className="px-4 py-2 text-sm font-semibold text-gray-300 hover:text-white border border-white/12 hover:border-white/25 rounded-xl transition-all duration-200 hover:bg-white/5"
+              >
+                {t('nav.login')}
+              </Link>
+              <Link
+                href="/auth/register"
+                className="px-4 py-2 text-sm font-bold text-[#0A2540] rounded-xl transition-all duration-200 hover:shadow-[0_0_24px_rgba(201,162,39,0.5)] hover:scale-[1.03] active:scale-95"
+                style={{ background: 'linear-gradient(135deg, #C9A227, #FFD700)' }}
+              >
+                {t('nav.register')}
+              </Link>
+            </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {/* Cart */}
-              <Link href="/cart" className="relative p-2.5 hover:bg-sky-50 rounded-lg transition-all">
-                <ShoppingCart size={22} className="text-gray-700" />
+              <Link
+                href="/cart"
+                className="relative p-2.5 hover:bg-white/8 rounded-xl transition-all duration-200 group"
+              >
+                <ShoppingCart
+                  size={19}
+                  className="text-gray-400 group-hover:text-white transition-colors duration-200"
+                />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow">
+                  <span
+                    key={cartCount}
+                    className="badge-pop absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] bg-gradient-to-r from-[#C9A227] to-[#FFD700] text-[#0A2540] text-[9px] font-black rounded-full flex items-center justify-center px-1 shadow-lg"
+                  >
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
               </Link>
 
-              {/* User info + logout */}
-              <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
-                <Link href="/profile" className="flex items-center gap-2 hover:bg-gray-50 px-3 py-2 rounded-xl transition-all group">
-                  <div className="w-8 h-8 bg-gradient-to-br from-[#0A2540] to-[#0089A7] rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {user.name?.charAt(0)?.toUpperCase()}
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-bold text-gray-900 leading-none">{user.name}</p>
-                    <p className="text-xs text-gray-500">{getRoleLabel(user.role)}</p>
-                  </div>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="p-2.5 hover:bg-red-50 rounded-lg transition-all text-gray-500 hover:text-red-600"
-                  title={t('nav.logout')}
+              <div className="w-px h-5 bg-white/10" />
+
+              {/* User */}
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-white/6 rounded-xl transition-all duration-200 group"
+              >
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-black flex-shrink-0 ring-1 ring-white/10 group-hover:ring-[#00AFCA]/40 transition-all duration-200"
+                  style={{ background: 'linear-gradient(135deg, #0A2540, #0089A7)' }}
                 >
-                  <LogOut size={18} />
-                </button>
-              </div>
+                  {user.name?.charAt(0)?.toUpperCase()}
+                </div>
+                <div className="hidden lg:block text-left">
+                  <p className="text-[11px] font-bold text-white leading-none">{user.name}</p>
+                  <p className="text-[9px] text-[#00AFCA] leading-none mt-0.5 font-semibold">{getRoleLabel(user.role)}</p>
+                </div>
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="p-2.5 hover:bg-red-500/12 rounded-xl transition-all duration-200 text-gray-600 hover:text-red-400"
+                title={t('nav.logout')}
+              >
+                <LogOut size={17} />
+              </button>
             </div>
           )}
         </div>
@@ -169,73 +215,96 @@ export function Navbar() {
         {/* Mobile button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden p-2 hover:bg-gray-100 rounded-xl transition-all"
+          className="md:hidden p-2.5 hover:bg-white/8 rounded-xl transition-all text-gray-300"
         >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+          {isOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md py-4 animate-slideUp">
+        <div className="md:hidden border-t border-white/8 bg-[#060D1A]/98 backdrop-blur-2xl py-4 animate-slideUp">
           <div className="container-custom space-y-1">
-            {/* Mobile language switcher */}
-            <div className="flex items-center gap-1 px-4 py-2 mb-1">
+            {/* Mobile language */}
+            <div className="flex gap-1 px-2 pb-3 border-b border-white/8 mb-2">
               {LANGS.map(({ code, label }) => (
                 <button
                   key={code}
                   onClick={() => setLang(code)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-200 ${
                     lang === code
-                      ? 'bg-[#0A2540] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'text-[#FFD700] border border-[#C9A227]/40'
+                      : 'text-gray-500 border border-transparent hover:text-gray-300 hover:bg-white/5'
                   }`}
+                  style={
+                    lang === code
+                      ? { background: 'linear-gradient(135deg, rgba(201,162,39,0.15), rgba(0,175,202,0.08))' }
+                      : {}
+                  }
                 >
                   {label}
                 </button>
               ))}
             </div>
 
-            <Link href="/products" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-sky-50 rounded-xl font-medium transition-colors">
-              <Package size={18} className="text-gray-500" /> {t('nav.products')}
-            </Link>
-            <Link href="/gamification" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-yellow-50 rounded-xl font-medium transition-colors">
-              <span>🎮</span> {t('nav.gamificationFull')}
-            </Link>
-            {user?.role === 'FARMER' && (
-              <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-sky-50 rounded-xl font-medium transition-colors">
-                <ShoppingBag size={18} className="text-gray-500" /> {t('nav.dashboard')}
+            {navLinks.map(({ href, labelKey }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-xl text-gray-300 hover:text-white font-medium transition-all duration-200"
+              >
+                {t(labelKey)}
               </Link>
-            )}
-            {user && (
+            ))}
+
+            {user ? (
               <>
-                <Link href="/orders" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-sky-50 rounded-xl font-medium transition-colors">
-                  <ShoppingBag size={18} className="text-gray-500" /> {t('nav.orders')}
-                </Link>
-                <Link href="/cart" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-sky-50 rounded-xl font-medium transition-colors">
+                <Link
+                  href="/cart"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-xl text-gray-300 hover:text-white font-medium transition-all duration-200"
+                >
                   <ShoppingCart size={18} className="text-gray-500" />
-                  {t('nav.cart')} {cartCount > 0 && <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{cartCount}</span>}
+                  {t('nav.cart')}
+                  {cartCount > 0 && (
+                    <span className="ml-auto bg-gradient-to-r from-[#C9A227] to-[#FFD700] text-[#0A2540] text-[10px] font-black px-2 py-0.5 rounded-full">
+                      {cartCount}
+                    </span>
+                  )}
                 </Link>
-                <Link href="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-sky-50 rounded-xl font-medium transition-colors">
+                <Link
+                  href="/profile"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-xl text-gray-300 hover:text-white font-medium transition-all duration-200"
+                >
                   <User size={18} className="text-gray-500" /> {t('nav.profile')}
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 rounded-xl text-red-600 font-medium transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 rounded-xl text-red-400 font-medium transition-all duration-200"
                 >
                   <LogOut size={18} /> {t('nav.logout')}
                 </button>
               </>
-            )}
-            {!user && (
-              <>
-                <Link href="/auth/login" onClick={() => setIsOpen(false)} className="block px-4 py-3 hover:bg-sky-50 rounded-xl font-medium transition-colors">
+            ) : (
+              <div className="pt-2 space-y-2 px-2">
+                <Link
+                  href="/auth/login"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-4 py-3 text-center border border-white/15 hover:border-white/30 rounded-xl text-gray-300 hover:text-white font-semibold transition-all duration-200"
+                >
                   {t('nav.login')}
                 </Link>
-                <Link href="/auth/register" onClick={() => setIsOpen(false)} className="block btn-primary text-center mt-2">
+                <Link
+                  href="/auth/register"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-4 py-3 text-center font-bold text-[#0A2540] rounded-xl hover:shadow-[0_0_20px_rgba(201,162,39,0.4)] transition-all duration-200"
+                  style={{ background: 'linear-gradient(135deg, #C9A227, #FFD700)' }}
+                >
                   {t('nav.register')}
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>

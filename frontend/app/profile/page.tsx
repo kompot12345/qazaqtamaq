@@ -4,10 +4,20 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { User, Mail, Phone, MapPin, Briefcase, Shield, Edit2, Save, X, ShoppingBag, Package } from 'lucide-react';
+import {
+  User, Mail, Phone, MapPin, Briefcase, Shield,
+  Edit2, Save, X, ShoppingBag, Package, LayoutDashboard,
+} from 'lucide-react';
 import { authAPI } from '@/lib/api';
 import { getStoredUser } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+
+const ROLE_STYLE: Record<string, { pill: string; dot: string }> = {
+  FARMER:    { pill: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30', dot: 'bg-emerald-400' },
+  B2B_BUYER: { pill: 'bg-blue-500/15 text-blue-300 border border-blue-500/30',         dot: 'bg-blue-400' },
+  B2C_BUYER: { pill: 'bg-[#00AFCA]/15 text-[#7DD8E8] border border-[#00AFCA]/30',      dot: 'bg-[#00AFCA]' },
+  ADMIN:     { pill: 'bg-red-500/15 text-red-400 border border-red-500/30',             dot: 'bg-red-400' },
+};
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -49,13 +59,14 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-white to-sky-50/30">
+      <div className="min-h-screen bg-[#060D1A]">
         <div className="bg-gradient-to-br from-[#0A2540] to-[#0D3256] py-14">
           <div className="container-custom"><div className="h-10 w-48 bg-white/20 rounded animate-pulse" /></div>
         </div>
-        <div className="container-custom py-10 max-w-2xl">
-          <div className="card p-8 space-y-4">
-            {[1,2,3,4].map(i => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse shimmer" />)}
+        <div className="container-custom py-10 max-w-5xl">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="h-56 rounded-2xl bg-white/[0.04] animate-pulse" />
+            <div className="lg:col-span-2 h-96 rounded-2xl bg-white/[0.04] animate-pulse" />
           </div>
         </div>
       </div>
@@ -64,12 +75,7 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const roleColor: Record<string, string> = {
-    FARMER: 'bg-sky-100 text-sky-800',
-    B2B_BUYER: 'bg-blue-100 text-blue-800',
-    B2C_BUYER: 'bg-purple-100 text-purple-800',
-    ADMIN: 'bg-red-100 text-red-800',
-  };
+  const roleStyle = ROLE_STYLE[user.role] ?? { pill: 'bg-gray-500/15 text-gray-400 border border-gray-500/30', dot: 'bg-gray-400' };
 
   const getRoleLabel = (role: string) => {
     const map: Record<string, string> = {
@@ -82,120 +88,137 @@ export default function ProfilePage() {
   };
 
   const quickLinks = [
-    user.role === 'FARMER' ? { href: '/dashboard', label: t('profile.farmerDashboard'), icon: Package } : null,
-    { href: '/orders', label: t('profile.myOrders'), icon: ShoppingBag },
-    { href: '/products', label: t('profile.catalogue'), icon: Package },
-  ].filter(Boolean) as { href: string; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[];
+    user.role === 'FARMER' ? { href: '/dashboard', label: t('profile.farmerDashboard'), Icon: LayoutDashboard } : null,
+    { href: '/orders', label: t('profile.myOrders'), Icon: ShoppingBag },
+    { href: '/products', label: t('profile.catalogue'), Icon: Package },
+  ].filter(Boolean) as { href: string; label: string; Icon: React.ComponentType<{ size?: number; className?: string }> }[];
+
+  const fields = [
+    { key: 'name', label: t('profile.name'), Icon: User, editable: true, type: 'text', placeholder: '' },
+    { key: 'email', label: t('profile.email'), Icon: Mail, editable: false, type: 'email', placeholder: '' },
+    { key: 'phone', label: t('profile.phone'), Icon: Phone, editable: true, type: 'tel', placeholder: '+7 (777) 000-0000' },
+    { key: 'city', label: t('profile.city'), Icon: MapPin, editable: true, type: 'text', placeholder: 'Алматы' },
+    ...(user.role === 'FARMER' || user.role === 'B2B_BUYER'
+      ? [{ key: 'binIin', label: t('profile.binIin'), Icon: Briefcase, editable: false, type: 'text', placeholder: '' }]
+      : []),
+    ...(user.address ? [{ key: 'address', label: t('profile.address'), Icon: MapPin, editable: true, type: 'text', placeholder: '' }] : []),
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-sky-50/30">
-      <div className="bg-gradient-to-br from-[#0A2540] to-[#0D3256] py-14">
-        <div className="container-custom">
-          <h1 className="text-4xl font-bold text-white flex items-center gap-3">
-            <User size={40} /> {t('profile.title')}
+    <div className="min-h-screen bg-[#060D1A]">
+      {/* Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#0A2540] via-[#0D3256] to-[#060D1A] py-14">
+        <div className="absolute top-0 left-1/3 w-72 h-72 bg-[#00AFCA]/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="container-custom relative z-10">
+          <p className="text-[#C9A227] text-[10px] font-black tracking-[0.2em] mb-3">MY ACCOUNT</p>
+          <h1 className="text-4xl font-black text-white flex items-center gap-3 tracking-tight">
+            <User size={36} className="text-[#C9A227]" />
+            {t('profile.title')}
           </h1>
         </div>
       </div>
 
       <div className="container-custom py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-5xl">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl">
           {/* Sidebar */}
           <div className="space-y-4">
-            <div className="card p-6 text-center">
-              <div className="w-24 h-24 bg-gradient-to-br from-[#0A2540] to-[#0D3256] rounded-full flex items-center justify-center mx-auto mb-4 text-white text-3xl font-bold shadow-lg">
+            {/* Avatar card */}
+            <div className="rounded-2xl border border-white/8 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-6 text-center">
+              <div
+                className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white text-3xl font-black shadow-lg ring-2 ring-white/10"
+                style={{ background: 'linear-gradient(135deg, #0A2540, #0089A7)' }}
+              >
                 {user.name?.charAt(0)?.toUpperCase() || 'U'}
               </div>
-              <h2 className="text-xl font-bold text-[#0A2540] mb-1">{user.name}</h2>
-              <span className={`inline-block text-sm font-bold px-3 py-1 rounded-full ${roleColor[user.role] || 'bg-gray-100 text-gray-700'}`}>
+              <h2 className="text-lg font-bold text-white mb-2">{user.name}</h2>
+              <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full ${roleStyle.pill}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${roleStyle.dot}`} />
                 {getRoleLabel(user.role)}
               </span>
               {user.isVerified && (
-                <div className="flex items-center justify-center gap-1 mt-3">
-                  <Shield size={14} className="text-[#00AFCA]" />
+                <div className="flex items-center justify-center gap-1.5 mt-3">
+                  <Shield size={13} className="text-[#00AFCA]" />
                   <span className="text-xs text-[#00AFCA] font-semibold">{t('profile.verified')}</span>
                 </div>
               )}
             </div>
 
-            <div className="card p-4">
-              <p className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3 px-2">{t('profile.quickLinks')}</p>
+            {/* Quick links */}
+            <div className="rounded-2xl border border-white/8 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-4">
+              <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-3 px-2">
+                {t('profile.quickLinks')}
+              </p>
               {quickLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-sky-50 transition-colors group">
-                  <link.icon size={18} className="text-gray-500 group-hover:text-[#0A2540]" />
-                  <span className="font-medium text-gray-700 group-hover:text-[#0A2540]">{link.label}</span>
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/6 transition-colors group"
+                >
+                  <link.Icon size={16} className="text-gray-600 group-hover:text-[#00AFCA] transition-colors" />
+                  <span className="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">
+                    {link.label}
+                  </span>
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* Main */}
+          {/* Main card */}
           <div className="lg:col-span-2">
-            <div className="card p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-[#0A2540]">{t('profile.personalData')}</h2>
+            <div className="rounded-2xl border border-white/8 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-7">
+              <div className="flex items-center justify-between mb-7">
+                <h2 className="text-lg font-bold text-white">{t('profile.personalData')}</h2>
                 {!editing ? (
-                  <button onClick={() => setEditing(true)} className="flex items-center gap-2 text-sm font-semibold text-[#0A2540] border border-gray-200 px-4 py-2 rounded-xl hover:bg-sky-50 transition-all">
-                    <Edit2 size={15} /> {t('profile.edit')}
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white border border-white/10 hover:border-white/25 px-3.5 py-2 rounded-xl transition-all"
+                  >
+                    <Edit2 size={13} /> {t('profile.edit')}
                   </button>
                 ) : (
                   <div className="flex gap-2">
-                    <button onClick={() => { setEditing(false); setForm(user); }} className="flex items-center gap-2 text-sm text-gray-600 border border-gray-200 px-4 py-2 rounded-xl hover:bg-gray-50 transition-all">
-                      <X size={15} /> {t('profile.cancel')}
+                    <button
+                      onClick={() => { setEditing(false); setForm(user); }}
+                      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white border border-white/10 px-3.5 py-2 rounded-xl hover:bg-white/5 transition-all"
+                    >
+                      <X size={13} /> {t('profile.cancel')}
                     </button>
-                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 text-sm btn-primary py-2">
-                      {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={15} />}
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="flex items-center gap-1.5 text-xs font-bold text-[#0A2540] px-3.5 py-2 rounded-xl transition-all hover:shadow-[0_0_16px_rgba(201,162,39,0.4)] disabled:opacity-60"
+                      style={{ background: 'linear-gradient(135deg, #C9A227, #FFD700)' }}
+                    >
+                      {saving
+                        ? <div className="w-3.5 h-3.5 border-2 border-[#0A2540]/30 border-t-[#0A2540] rounded-full animate-spin" />
+                        : <Save size={13} />}
                       {t('profile.save')}
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="space-y-5">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-600 mb-2"><User size={15} /> {t('profile.name')}</label>
-                  {editing ? (
-                    <input type="text" value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-field" />
-                  ) : (
-                    <p className="text-[#0A2540] font-medium py-3 px-4 bg-gray-50 rounded-xl">{user.name}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-600 mb-2"><Mail size={15} /> {t('profile.email')}</label>
-                  <p className="text-gray-500 font-medium py-3 px-4 bg-gray-50 rounded-xl">{user.email}</p>
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-600 mb-2"><Phone size={15} /> {t('profile.phone')}</label>
-                  {editing ? (
-                    <input type="tel" value={form.phone || ''} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+7 (777) 000-0000" className="input-field" />
-                  ) : (
-                    <p className="font-medium py-3 px-4 bg-gray-50 rounded-xl">{user.phone || <span className="text-gray-400 italic">{t('profile.notSet')}</span>}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-600 mb-2"><MapPin size={15} /> {t('profile.city')}</label>
-                  {editing ? (
-                    <input type="text" value={form.city || ''} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Алматы" className="input-field" />
-                  ) : (
-                    <p className="font-medium py-3 px-4 bg-gray-50 rounded-xl">{user.city || <span className="text-gray-400 italic">{t('profile.notSet')}</span>}</p>
-                  )}
-                </div>
-
-                {(user.role === 'FARMER' || user.role === 'B2B_BUYER') && (
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-600 mb-2"><Briefcase size={15} /> {t('profile.binIin')}</label>
-                    <p className="font-medium py-3 px-4 bg-gray-50 rounded-xl">{user.binIin || <span className="text-gray-400 italic">{t('profile.notSet')}</span>}</p>
+              <div className="space-y-4">
+                {fields.map(({ key, label, Icon, editable, type, placeholder }) => (
+                  <div key={key}>
+                    <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">
+                      <Icon size={12} /> {label}
+                    </label>
+                    {editing && editable ? (
+                      <input
+                        type={type}
+                        value={form[key] || ''}
+                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                        placeholder={placeholder}
+                        className="w-full px-4 py-3 bg-white/6 border border-white/10 rounded-xl text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#00AFCA]/50 focus:bg-white/8 transition-all"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium py-3 px-4 bg-white/[0.03] border border-white/6 rounded-xl text-gray-300">
+                        {user[key] || <span className="text-gray-600 italic">{t('profile.notSet')}</span>}
+                      </p>
+                    )}
                   </div>
-                )}
-
-                {user.address && (
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-600 mb-2"><MapPin size={15} /> {t('profile.address')}</label>
-                    <p className="font-medium py-3 px-4 bg-gray-50 rounded-xl">{user.address}</p>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
           </div>

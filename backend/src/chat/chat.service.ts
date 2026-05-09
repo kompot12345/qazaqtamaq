@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import Anthropic from '@anthropic-ai/sdk';
 
-interface TattibekeResponse {
+export interface TattibekeResponse {
   reply: string;
   suggestions: string[];
   data?: any;

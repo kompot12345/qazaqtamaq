@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight, Package, X, MapPin, Phone, User } from 'lucide-react';
+import {
+  ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight,
+  Package, X, MapPin, Phone, User,
+} from 'lucide-react';
 import { ordersAPI, productsAPI } from '@/lib/api';
 import { formatPrice, getStoredUser, getStoredCart, saveCart } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -131,17 +134,20 @@ export default function CartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-sky-50/30">
+    <div className="min-h-screen bg-[#060D1A]">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#0A2540] to-[#0D3256] py-14">
-        <div className="container-custom">
-          <Link href="/products" className="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors mb-4">
-            <ArrowLeft size={18} /> {t('cart.continueShopping')}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#0A2540] via-[#0D3256] to-[#060D1A] py-14">
+        <div className="absolute top-0 right-1/4 w-64 h-64 bg-[#00AFCA]/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="container-custom relative z-10">
+          <Link href="/products" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-5 transition-colors text-sm">
+            <ArrowLeft size={16} /> {t('cart.continueShopping')}
           </Link>
-          <h1 className="text-4xl font-bold text-white flex items-center gap-3">
-            <ShoppingCart size={40} /> {t('cart.title')}
+          <p className="text-[#C9A227] text-[10px] font-black tracking-[0.2em] mb-3">MY ACCOUNT</p>
+          <h1 className="text-4xl font-black text-white flex items-center gap-3 tracking-tight">
+            <ShoppingCart size={36} className="text-[#C9A227]" />
+            {t('cart.title')}
             {cart.length > 0 && (
-              <span className="text-2xl text-[#D4AF37]">({cart.length})</span>
+              <span className="text-2xl text-[#C9A227]">({cart.length})</span>
             )}
           </h1>
         </div>
@@ -149,33 +155,40 @@ export default function CartPage() {
 
       <div className="container-custom py-10">
         {cart.length === 0 ? (
-          <div className="text-center py-24">
-            <div className="w-24 h-24 bg-sky-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShoppingCart size={40} className="text-gray-300" />
+          <div className="text-center py-24 border border-white/6 rounded-3xl bg-white/[0.02]">
+            <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <ShoppingCart size={36} className="text-gray-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-700 mb-3">{t('cart.empty')}</h2>
+            <h2 className="text-2xl font-bold text-white mb-3">{t('cart.empty')}</h2>
             <p className="text-gray-500 mb-8">{t('cart.emptySubtitle')}</p>
-            <Link href="/products" className="btn-primary inline-flex items-center gap-2">
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 px-6 py-3 font-bold text-[#0A2540] rounded-xl transition-all hover:shadow-[0_0_20px_rgba(201,162,39,0.4)] hover:scale-[1.02]"
+              style={{ background: 'linear-gradient(135deg, #C9A227, #FFD700)' }}
+            >
               <Package size={18} /> {t('cart.goToCatalogue')}
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Cart items */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-gray-600 font-medium">{cart.length} {t('nav.products').toLowerCase()}</p>
+                <p className="text-gray-400 text-sm font-medium">{cart.length} {t('nav.products').toLowerCase()}</p>
                 <button
                   onClick={clearCart}
-                  className="text-sm text-red-500 hover:text-red-700 flex items-center gap-1 transition-colors font-medium"
+                  className="text-sm text-red-400 hover:text-red-300 flex items-center gap-1.5 transition-colors font-medium"
                 >
-                  <Trash2 size={14} /> {t('cart.clearCart')}
+                  <Trash2 size={13} /> {t('cart.clearCart')}
                 </button>
               </div>
 
               {cart.map((item) => (
-                <div key={item.productId} className="card p-5 flex gap-4 items-center">
-                  <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-sky-50">
+                <div
+                  key={item.productId}
+                  className="flex gap-4 items-center p-4 rounded-2xl border border-white/8 bg-gradient-to-b from-white/[0.06] to-white/[0.02] hover:border-white/14 transition-all duration-200"
+                >
+                  <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-white/8 border border-white/10">
                     {item.imageUrl ? (
                       <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                     ) : (
@@ -184,39 +197,39 @@ export default function CartPage() {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-[#0A2540] truncate">{item.name}</h3>
+                    <h3 className="font-bold text-white truncate">{item.name}</h3>
                     <p className="text-sm text-gray-500">{formatPrice(item.price)} ₸/кг</p>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex items-center border border-white/10 bg-white/5 rounded-xl overflow-hidden">
                       <button
                         onClick={() => updateQty(item.productId, -1)}
-                        className="px-3 py-2 hover:bg-gray-50 transition-colors text-gray-700"
+                        className="w-8 h-9 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/8 transition-all"
                       >
-                        <Minus size={14} />
+                        <Minus size={12} />
                       </button>
-                      <span className="px-4 py-2 font-bold text-[#0A2540] border-x border-gray-200 text-sm">
+                      <span className="w-8 text-center font-bold text-white text-sm border-x border-white/10">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => updateQty(item.productId, 1)}
                         disabled={item.quantity >= item.retailStock}
-                        className="px-3 py-2 hover:bg-gray-50 transition-colors text-gray-700 disabled:opacity-40"
+                        className="w-8 h-9 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/8 transition-all disabled:opacity-30"
                       >
-                        <Plus size={14} />
+                        <Plus size={12} />
                       </button>
                     </div>
 
-                    <p className="font-bold text-[#0A2540] w-28 text-right">
+                    <p className="font-bold text-white w-24 text-right text-sm">
                       {formatPrice(item.price * item.quantity)} ₸
                     </p>
 
                     <button
                       onClick={() => removeItem(item.productId)}
-                      className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500"
+                      className="p-2 hover:bg-red-500/12 rounded-lg transition-colors text-gray-600 hover:text-red-400"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 </div>
@@ -225,47 +238,48 @@ export default function CartPage() {
 
             {/* Order summary */}
             <div className="lg:col-span-1">
-              <div className="card p-6 sticky top-24">
-                <h2 className="text-xl font-bold text-[#0A2540] mb-6">{t('cart.orderSummary')}</h2>
+              <div className="rounded-2xl border border-white/8 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-6 sticky top-24">
+                <h2 className="text-lg font-bold text-white mb-5">{t('cart.orderSummary')}</h2>
 
-                <div className="space-y-3 mb-6">
+                <div className="space-y-2.5 mb-5">
                   {cart.map((item) => (
                     <div key={item.productId} className="flex justify-between text-sm">
-                      <span className="text-gray-600 truncate flex-1 mr-2">{item.name} × {item.quantity}</span>
-                      <span className="font-medium text-[#0A2540] flex-shrink-0">{formatPrice(item.price * item.quantity)} ₸</span>
+                      <span className="text-gray-500 truncate flex-1 mr-2">{item.name} × {item.quantity}</span>
+                      <span className="font-medium text-gray-300 flex-shrink-0">{formatPrice(item.price * item.quantity)} ₸</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="border-t border-gray-200 pt-4 mb-6">
+                <div className="border-t border-white/10 pt-4 mb-5">
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-[#0A2540]">{t('cart.total')}</span>
-                    <span className="text-2xl font-bold text-[#0A2540]">{formatPrice(total)} ₸</span>
+                    <span className="font-bold text-white">{t('cart.total')}</span>
+                    <span className="text-2xl font-black text-white">{formatPrice(total)} ₸</span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">{t('cart.excludingDelivery')}</p>
+                  <p className="text-xs text-gray-600 mt-1">{t('cart.excludingDelivery')}</p>
                 </div>
 
                 <button
                   onClick={openCheckout}
                   disabled={cart.length === 0}
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-[#C9A227] to-[#FFD700] text-[#0A2540] font-bold rounded-xl hover:shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 font-bold text-[#0A2540] rounded-xl transition-all hover:shadow-[0_0_24px_rgba(201,162,39,0.4)] hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  style={{ background: 'linear-gradient(135deg, #C9A227, #FFD700)' }}
                 >
-                  {t('cart.placeOrder')} <ArrowRight size={18} />
+                  {t('cart.placeOrder')} <ArrowRight size={17} />
                 </button>
 
                 {!user && (
-                  <p className="text-center text-xs text-gray-500 mt-3">
-                    <Link href="/auth/login" className="text-[#0A2540] font-semibold hover:underline">
+                  <p className="text-center text-xs text-gray-600 mt-3">
+                    <Link href="/auth/login" className="text-[#00AFCA] font-semibold hover:underline">
                       {t('cart.loginToOrder')}
                     </Link>{' '}
                     {t('cart.loginToOrderSuffix')}
                   </p>
                 )}
 
-                <div className="mt-6 space-y-2">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">{t('cart.securePayment')}</div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">{t('cart.deliveryKz')}</div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">{t('cart.qualityGuarantee')}</div>
+                <div className="mt-5 space-y-2 pt-4 border-t border-white/8">
+                  <p className="text-xs text-gray-600">{t('cart.securePayment')}</p>
+                  <p className="text-xs text-gray-600">{t('cart.deliveryKz')}</p>
+                  <p className="text-xs text-gray-600">{t('cart.qualityGuarantee')}</p>
                 </div>
               </div>
             </div>
@@ -276,94 +290,106 @@ export default function CartPage() {
       {/* Delivery modal */}
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
         >
-          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
+          <div className="w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden border border-white/12 bg-[#0A1929] shadow-[0_32px_80px_rgba(0,0,0,0.8)]">
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/8">
               <div>
-                <h2 className="text-xl font-bold text-[#0A2540]">{t('cart.deliveryTitle')}</h2>
-                <p className="text-sm text-gray-400 mt-0.5">{t('cart.deliverySubtitle')}</p>
+                <h2 className="text-xl font-bold text-white">{t('cart.deliveryTitle')}</h2>
+                <p className="text-sm text-gray-500 mt-0.5">{t('cart.deliverySubtitle')}</p>
               </div>
-              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-                <X size={20} className="text-gray-500" />
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-2 hover:bg-white/8 rounded-xl transition-colors text-gray-500 hover:text-white"
+              >
+                <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleSubmitOrder} className="px-6 py-5 space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{t('auth.fullName')}</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                  {t('auth.fullName')}
+                </label>
                 <div className="relative">
-                  <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600" />
                   <input
                     value={delivery.name}
                     onChange={(e) => setDelivery((d) => ({ ...d, name: e.target.value }))}
                     placeholder={t('cart.namePlaceholder')}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00AFCA] focus:ring-2 focus:ring-[#00AFCA]/20 transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-white/6 border border-white/10 rounded-xl text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#00AFCA]/50 focus:bg-white/8 transition-all"
                   />
                 </div>
               </div>
 
               {/* Phone */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{t('cart.phoneRequired')}</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                  {t('cart.phoneRequired')}
+                </label>
                 <div className="relative">
-                  <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600" />
                   <input
                     required
                     value={delivery.phone}
                     onChange={(e) => setDelivery((d) => ({ ...d, phone: e.target.value }))}
                     placeholder="+7 700 000 0000"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00AFCA] focus:ring-2 focus:ring-[#00AFCA]/20 transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-white/6 border border-white/10 rounded-xl text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#00AFCA]/50 focus:bg-white/8 transition-all"
                   />
                 </div>
               </div>
 
               {/* City */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{t('cart.cityRequired')}</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                  {t('cart.cityRequired')}
+                </label>
                 <div className="relative">
-                  <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <MapPin size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600" />
                   <input
                     required
                     value={delivery.city}
                     onChange={(e) => setDelivery((d) => ({ ...d, city: e.target.value }))}
                     placeholder="Алматы"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00AFCA] focus:ring-2 focus:ring-[#00AFCA]/20 transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-white/6 border border-white/10 rounded-xl text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#00AFCA]/50 focus:bg-white/8 transition-all"
                   />
                 </div>
               </div>
 
               {/* Address */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{t('cart.deliveryAddress')}</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                  {t('cart.deliveryAddress')}
+                </label>
                 <textarea
                   required
                   rows={2}
                   value={delivery.address}
                   onChange={(e) => setDelivery((d) => ({ ...d, address: e.target.value }))}
                   placeholder={t('cart.addressPlaceholder')}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00AFCA] focus:ring-2 focus:ring-[#00AFCA]/20 transition-all resize-none"
+                  className="w-full px-4 py-3 bg-white/6 border border-white/10 rounded-xl text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#00AFCA]/50 focus:bg-white/8 transition-all resize-none"
                 />
               </div>
 
-              <div className="bg-gray-50 rounded-2xl p-4">
+              <div className="bg-white/[0.04] border border-white/8 rounded-xl p-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">{cart.length} {t('nav.products').toLowerCase()}</span>
-                  <span className="font-bold text-[#0A2540] text-lg">{formatPrice(total)} ₸</span>
+                  <span className="text-sm text-gray-400">{cart.length} {t('nav.products').toLowerCase()}</span>
+                  <span className="font-black text-white text-lg">{formatPrice(total)} ₸</span>
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-[#C9A227] to-[#FFD700] text-[#0A2540] font-bold rounded-xl hover:shadow-lg hover:shadow-yellow-500/30 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center gap-2 py-3.5 font-bold text-[#0A2540] rounded-xl transition-all hover:shadow-[0_0_24px_rgba(201,162,39,0.4)] hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                style={{ background: 'linear-gradient(135deg, #C9A227, #FFD700)' }}
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-[#0A2540]/30 border-t-[#0A2540] rounded-full animate-spin" />
                 ) : (
-                  <>{t('cart.confirmOrder')}</>
+                  t('cart.confirmOrder')
                 )}
               </button>
             </form>

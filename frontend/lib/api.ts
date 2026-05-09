@@ -35,8 +35,8 @@ export const authAPI = {
 };
 
 export const productsAPI = {
-  getAll: (page = 1, limit = 10, categoryId?: string) =>
-    api.get('/products', { params: { page, limit, ...(categoryId && { categoryId }) } }),
+  getAll: (page = 1, limit = 10, categoryId?: string, search?: string) =>
+    api.get('/products', { params: { page, limit, ...(categoryId && { categoryId }), ...(search && { search }) } }),
   getById: (id: string) => api.get(`/products/${id}`),
   create: (data: unknown) => api.post('/products', data),
   update: (id: string, data: unknown) => api.patch(`/products/${id}`, data),
