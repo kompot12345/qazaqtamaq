@@ -51,7 +51,17 @@ export class OrdersService {
   async findById(id: string, userId: string) {
     const order = await this.prisma.order.findFirst({
       where: { id, userId },
-      include: { items: { include: { product: true } } },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                farmer: { select: { id: true, name: true, city: true, address: true } },
+              },
+            },
+          },
+        },
+      },
     });
     if (!order) throw new NotFoundException('Order not found');
     return order;

@@ -93,7 +93,9 @@ export interface OrderItem {
   productId: string;
   quantity: number;
   price: number;
-  product?: Product;
+  product?: Product & {
+    farmer?: { id: string; name: string; city?: string; address?: string };
+  };
 }
 
 export interface Order {
