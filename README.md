@@ -258,12 +258,6 @@ PORT=8000
 # Деплой: push в main (git)
 ```
 
-## 📚 Документация
-
-- **Swagger API**: http://your-api.railway.app/api/docs
-- **Prisma Studio**: `npx prisma studio` (локально)
-- **NestJS Docs**: https://docs.nestjs.com
-- **Next.js Docs**: https://nextjs.org/docs
 
 ## 🤖 AI-Инструменты
 
@@ -292,10 +286,7 @@ PORT=8000
 
 ## 📞 Контакты
 
-- **Support**: support@qazaqtamaq.kz
 - **GitHub**: [your-github-repo](https://github.com)
-- **Live Demo**: [your-vercel-url](https://your-domain.vercel.app)
+- **Live Demo**: [[your-vercel-url](https://your-domain.vercel.app)](https://qazaqtamaq.vercel.app/products)
+- **Live Demo**: https://qazaqtamaq-production.up.railway.app 
 
-## 📄 Лицензия
-
-MIT License © 2026 QazaqTamaq
