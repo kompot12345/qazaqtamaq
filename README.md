@@ -284,9 +284,5 @@ PORT=8000
 - [ ] README.md имеет описание, скриншоты, ссылку на live-demo
 - [ ] Минимум 10 осмысленных коммитов
 
-## 📞 Контакты
 
-- **GitHub**: [your-github-repo](https://github.com)
-- **Live Demo**: [[your-vercel-url](https://your-domain.vercel.app)](https://qazaqtamaq.vercel.app/products)
-- **Live Demo**: https://qazaqtamaq-production.up.railway.app 
 
